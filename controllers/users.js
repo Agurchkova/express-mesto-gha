@@ -38,21 +38,21 @@ module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      res.status(404).send({ message: 'Пользователь не найден' });
+      res.status(404).send({ message: 'Данные не найдены' });
       throw new Error('Not found');
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'Not found') {
-        res.status(404).send({ message: `Произошла ошибка ${err}` });
+        res.status(404).send({ message: `Данные не найдены ${err}` });
       } else {
-        res.status(500).send({ message: `Произошла ошибка ${err}` });
+        res.status(500).send({ message: `Что-то пошло не так ${err}` });
       }
     });
 };
 
 // updateUser
-module.exports.updateUser = (req, res, next) => {
+module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -62,14 +62,15 @@ module.exports.updateUser = (req, res, next) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new Error('Неверный тип данных.'));
+        res.status(400).send({ message: `Неверные данные ${err}` });
+      } else {
+        res.status(500).send({ message: `Что-то пошло не так ${err}` });
       }
-      return next(err);
     });
 };
 
 // updateAvatar
-module.exports.updateAvatar = (req, res, next) => {
+module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -79,8 +80,9 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new Error('Неверная ссылка'));
+        res.status(400).send({ message: `Неверные данные ${err}` });
+      } else {
+        res.status(500).send({ message: `Что-то пошло не так ${err}` });
       }
-      return next(err);
     });
 };
