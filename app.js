@@ -8,9 +8,6 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(express.json());
-app.use(userRouter);
-app.use(cardRouter);
-app.post(createUser);
 app.use((req, res, next) => {
   req.user = {
     _id: '644111c121971bd6bdec4dc1',
@@ -18,6 +15,9 @@ app.use((req, res, next) => {
 
   next();
 });
+app.use(userRouter);
+app.use(cardRouter);
+app.post(createUser);
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,

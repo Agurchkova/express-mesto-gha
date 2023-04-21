@@ -8,7 +8,7 @@ module.exports.createUser = (req, res) => {
       res.status(201).send({ data: user });
     })
     .catch((err) => {
-      console.log('err =>', err.errors);
+      // console.log('err =>', err.errors);
       if (err.name === 'ValidationError') {
         const message = Object.values(err.errors)
           .map((error) => error.message)
@@ -55,18 +55,12 @@ module.exports.getUserById = (req, res) => {
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.user._id,
+    req.params.id,
     { name, about },
     { new: true, runValidators: true },
   )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Неверные данные ${err}` });
-      } else {
-        res.status(500).send({ message: `Что-то пошло не так ${err}` });
-      }
-    });
+    .then((user) => res.status(200).send({ data: user }))
+    .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
 };
 
 // updateAvatar

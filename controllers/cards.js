@@ -11,10 +11,15 @@ module.exports.getCards = (req, res) => {
 module.exports.createCard = (req, res) => {
   console.log(req.user._id); // _id станет доступен
   const { name, link } = req.body;
-
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(200).send(card))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      if (Card) {
+        res.send({ data: Card });
+      } else {
+        res.status(500).send({ message: `Что-то пошло не так ${err}` });
+      }
+    });
 };
 
 // deleteCard
