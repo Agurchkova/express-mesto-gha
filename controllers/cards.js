@@ -51,13 +51,14 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
   { new: true, runValidators: true },
 )
   .orFail(() => {
-    res.status(404).send({ message: 'Данные не найдены' });
+    res.status(404).send({ message: 'Карточка не найдена' });
     throw new Error('Not found');
   })
-  .then((card) => res.send({ data: card }))
+  .then((card) => res.send({ data: card, message: 'Лайк успешно поставлен' }))
   .catch((err) => {
-    if (err.message === 'Not found') {
-      res.status(404).send({ message: 'Карточка не найдена' });
+    console.log('err =>', err.name);
+    if (err.name === 'CastError') {
+      res.status(400).send({ message: 'Переданы некорректные данные' });
     } else {
       res.status(200).send(Card);
     }
@@ -70,13 +71,13 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
   { new: true, runValidators: true },
 )
   .orFail(() => {
-    res.status(404).send({ message: 'Данные не найдены' });
+    res.status(404).send({ message: 'Карточка не найдена' });
     throw new Error('Not found');
   })
-  .then((card) => res.send({ data: card }))
+  .then((card) => res.send({ data: card, message: 'Лайк успешно удален' }))
   .catch((err) => {
     if (err.message === 'Not found') {
-      res.status(404).send({ message: 'Карточка не найдена' });
+      res.status(400).send({ message: 'Переданы некорректные данные' });
     } else {
       res.status(200).send(Card);
     }
