@@ -14,10 +14,13 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
-      if (Card) {
-        res.send({ data: Card });
+      if (err.name === 'ValidationError') {
+        const message = Object.values(err.errors)
+          .map((error) => error.message)
+          .join('; ');
+        res.status(400).send({ message });
       } else {
-        res.status(500).send({ message: `Что-то пошло не так ${err}` });
+        res.status(500).send({ message: 'Что-то пошло не так' });
       }
     });
 };
