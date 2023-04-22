@@ -1,4 +1,6 @@
 const Card = require('../models/card');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
 
 // getCard
 module.exports.getCards = (req, res) => {
@@ -19,6 +21,7 @@ module.exports.createCard = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
+        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
@@ -32,22 +35,20 @@ module.exports.deleteCard = (req, res) => {
   Card.findById(cardId)
     .orFail(() => {
       res.status(404).send({ message: 'Карточка не найдена' });
-      throw new Error('Not found');
+      throw new NotFoundError();
     })
     .then((card) => {
-      if (!card) {
-        throw new Error('Карточка с таким _id не найдена.');
-      }
       if (card.owner.valueOf() !== _id) {
-        throw new Error('Нет прав для удаления чужой карточки!');
+        throw new Error('Нет прав для удаления чужой карточки');
       }
       Card.findByIdAndRemove(cardId)
         .then((deletedCard) => res.status(200)
-          .send({ deletedCard, message: 'карточка успешно удалена' }));
+          .send({ deletedCard, message: 'Карточка успешно удалена' }));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError();
       } else {
         res.status(200).send(Card);
       }
@@ -62,13 +63,13 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
 )
   .orFail(() => {
     res.status(404).send({ message: 'Карточка не найдена' });
-    throw new Error('Not found');
+    throw new NotFoundError();
   })
   .then((card) => res.send({ data: card, message: 'Лайк успешно поставлен' }))
   .catch((err) => {
-    console.log('err =>', err.name);
     if (err.name === 'CastError') {
       res.status(400).send({ message: 'Переданы некорректные данные' });
+      throw new BadRequestError();
     } else {
       res.status(200).send(Card);
     }
@@ -82,12 +83,13 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
 )
   .orFail(() => {
     res.status(404).send({ message: 'Карточка не найдена' });
-    throw new Error('Not found');
+    throw new NotFoundError();
   })
   .then((card) => res.send({ data: card, message: 'Лайк успешно удален' }))
   .catch((err) => {
     if (err.name === 'CastError') {
       res.status(400).send({ message: 'Переданы некорректные данные' });
+      throw new BadRequestError();
     } else {
       res.status(200).send(Card);
     }

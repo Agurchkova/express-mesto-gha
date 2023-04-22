@@ -1,4 +1,6 @@
 const User = require('../models/user');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
 
 // createUser
 module.exports.createUser = (req, res) => {
@@ -14,6 +16,7 @@ module.exports.createUser = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
+        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
@@ -24,11 +27,11 @@ module.exports.createUser = (req, res) => {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
+    .catch(() => {
       if (User) {
         res.send({ data: User });
       } else {
-        res.status(500).send({ message: `Что-то пошло не так ${err}` });
+        res.status(500).send({ message: 'Что-то пошло не так' });
       }
     });
 };
@@ -39,14 +42,13 @@ module.exports.getUserById = (req, res) => {
   User.findById(userId)
     .orFail(() => {
       res.status(404).send({ message: 'Данные не найдены' });
-      throw new Error('Not found');
+      throw new NotFoundError();
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'Not found') {
         res.status(404).send({ message: 'Данные не найдены' });
-      } else {
-        res.status(400).send({ message: 'Неверные данные' });
+        throw new NotFoundError();
       }
     });
 };
@@ -67,6 +69,7 @@ module.exports.updateUser = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
+        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
@@ -89,6 +92,7 @@ module.exports.updateAvatar = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
+        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
