@@ -76,7 +76,8 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
   })
   .then((card) => res.send({ data: card, message: 'Лайк успешно удален' }))
   .catch((err) => {
-    if (err.message === 'Not found') {
+    console.log('err =>', err.name);
+    if (err.name === 'CastError') {
       res.status(400).send({ message: 'Переданы некорректные данные' });
     } else {
       res.status(200).send(Card);
