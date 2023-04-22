@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { urlRegex } = require('../utils/regex');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -15,6 +16,12 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    validate: {
+      validator(v) {
+        return urlRegex.test(v);
+      },
+      message: 'не является ссылкой',
+    },
     required: true,
   },
 });

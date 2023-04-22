@@ -8,7 +8,6 @@ module.exports.createUser = (req, res) => {
       res.status(201).send({ data: user });
     })
     .catch((err) => {
-      // console.log('err =>', err.errors);
       if (err.name === 'ValidationError') {
         const message = Object.values(err.errors)
           .map((error) => error.message)
@@ -60,7 +59,17 @@ module.exports.updateUser = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
+    .catch((err) => {
+      console.log('err =>', err.errors);
+      if (err.name === 'ValidationError') {
+        const message = Object.values(err.errors)
+          .map((error) => error.message)
+          .join('; ');
+        res.status(400).send({ message });
+      } else {
+        res.status(500).send({ message: 'Что-то пошло не так' });
+      }
+    });
 };
 
 // updateAvatar
@@ -73,10 +82,14 @@ module.exports.updateAvatar = (req, res) => {
   )
     .then((user) => res.status(200).send(user))
     .catch((err) => {
+      console.log('err =>', err.errors);
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Неверные данные ${err}` });
+        const message = Object.values(err.errors)
+          .map((error) => error.message)
+          .join('; ');
+        res.status(400).send({ message });
       } else {
-        res.status(500).send({ message: `Что-то пошло не так ${err}` });
+        res.status(500).send({ message: 'Что-то пошло не так' });
       }
     });
 };
