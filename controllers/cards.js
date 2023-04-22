@@ -26,10 +26,14 @@ module.exports.createCard = (req, res) => {
 };
 
 // deleteCard
-module.exports.deleteCard = (req, res, next) => {
+module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   const { _id } = req.user;
   Card.findById(cardId)
+    .orFail(() => {
+      res.status(404).send({ message: 'Карточка не найдена' });
+      throw new Error('Not found');
+    })
     .then((card) => {
       if (!card) {
         throw new Error('Карточка с таким _id не найдена.');
@@ -38,10 +42,16 @@ module.exports.deleteCard = (req, res, next) => {
         throw new Error('Нет прав для удаления чужой карточки!');
       }
       Card.findByIdAndRemove(cardId)
-        .then((deletedCard) => res.status(200).send(deletedCard))
-        .catch(next);
+        .then((deletedCard) => res.status(200)
+          .send({ deletedCard, message: 'карточка успешно удалена' }))
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(200).send(Card);
+      }
+    });
 };
 
 // likeCard
@@ -76,7 +86,6 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
   })
   .then((card) => res.send({ data: card, message: 'Лайк успешно удален' }))
   .catch((err) => {
-    console.log('err =>', err.name);
     if (err.name === 'CastError') {
       res.status(400).send({ message: 'Переданы некорректные данные' });
     } else {
