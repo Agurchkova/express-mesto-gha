@@ -48,13 +48,16 @@ module.exports.deleteCard = (req, res, next) => {
 module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-  { new: true },
+  { new: true, runValidators: true },
 )
+  .orFail(() => {
+    res.status(404).send({ message: 'Данные не найдены' });
+    throw new Error('Not found');
+  })
   .then((card) => res.send({ data: card }))
   .catch((err) => {
-    if (!Card) {
-      res.status(404).send({ message: `Карточка не найдена ${err}` });
-      throw new Error('Not found');
+    if (err.message === 'Not found') {
+      res.status(404).send({ message: 'Карточка не найдена' });
     } else {
       res.status(200).send(Card);
     }
@@ -64,13 +67,16 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
 module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } }, // убрать _id из массива
-  { new: true },
+  { new: true, runValidators: true },
 )
+  .orFail(() => {
+    res.status(404).send({ message: 'Данные не найдены' });
+    throw new Error('Not found');
+  })
   .then((card) => res.send({ data: card }))
   .catch((err) => {
-    if (!Card) {
-      res.status(404).send({ message: `Карточка не найдена ${err}` });
-      throw new Error('Not found');
+    if (err.message === 'Not found') {
+      res.status(404).send({ message: 'Карточка не найдена' });
     } else {
       res.status(200).send(Card);
     }
