@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
       validator(v) {
         return urlRegex.test(v);
       },
-      message: 'не является ссылкой',
+      message: 'данные в поле аватар не являются ссылкой',
     },
     required: true,
   },
