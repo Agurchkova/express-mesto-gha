@@ -25,14 +25,10 @@ module.exports.createUser = (req, res) => {
 
 // getUsers
 module.exports.getUsers = (req, res) => {
-  User.find({})
+  User.find()
     .then((users) => res.send({ data: users }))
     .catch(() => {
-      if (User) {
-        res.send({ data: User });
-      } else {
-        res.status(500).send({ message: 'Что-то пошло не так' });
-      }
+      res.status(500).send({ message: 'Что-то пошло не так' });
     });
 };
 
@@ -41,17 +37,15 @@ module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      res.status(404).send({ message: 'Данные не найдены' });
-      throw new NotFoundError();
+      throw new NotFoundError('Not found');
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'Not found') {
         res.status(404).send({ message: 'Данные не найдены' });
-        throw new NotFoundError();
       } else {
-        res.status(400).send({ message: 'Неверные данные' });
-        throw new BadRequestError();
+        res.status(500).send({ message: 'Что-то пошло не так' });
+        // res.status(400).send({ message: 'Неверные данные' });
       }
     });
 };
