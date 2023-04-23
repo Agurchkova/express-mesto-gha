@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-// const { createUser } = require('./controllers/users');
 const { userRouter, cardRouter } = require('./routes');
 const errorHandler = require('./middlewares/errorHandler');
 
