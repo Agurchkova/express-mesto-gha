@@ -16,7 +16,6 @@ module.exports.createUser = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
-        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
@@ -24,28 +23,25 @@ module.exports.createUser = (req, res) => {
 };
 
 // getUsers
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find()
-    .then((users) => res.send({ data: users }))
-    .catch(() => {
-      res.status(500).send({ message: 'Что-то пошло не так' });
-    });
+    .then((users) => res.status(200).send({ data: users }))
+    .catch(next);
 };
 
 // getUserById
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      throw new NotFoundError('Not found');
+      throw new NotFoundError('Данные не найдены');
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.message === 'Not found') {
-        res.status(404).send({ message: 'Данные не найдены' });
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Некорректные данные'));
       } else {
-        res.status(500).send({ message: 'Что-то пошло не так' });
-        // res.status(400).send({ message: 'Неверные данные' });
+        next(err);
       }
     });
 };
@@ -66,7 +62,6 @@ module.exports.updateUser = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
-        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
@@ -89,7 +84,6 @@ module.exports.updateAvatar = (req, res) => {
           .map((error) => error.message)
           .join('; ');
         res.status(400).send({ message });
-        throw new BadRequestError();
       } else {
         res.status(500).send({ message: 'Что-то пошло не так' });
       }
