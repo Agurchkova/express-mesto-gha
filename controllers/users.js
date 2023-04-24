@@ -1,30 +1,31 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
+const {
+  BadRequestError,
+  NotFoundError,
+  InternalServerError,
+} = require('../errors/index');
+const { OK } = require('../utils/constants');
 
 // createUser
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
-      res.status(201).send({ data: user });
+      res.status(OK).send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors)
-          .map((error) => error.message)
-          .join('; ');
-        res.status(400).send({ message });
-      } else {
-        res.status(500).send({ message: 'Что-то пошло не так' });
+      if (err instanceof mongoose.Error.ValidationError) {
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
+      return next(new InternalServerError('Произошла ошибка на сервере.'));
     });
 };
 
 // getUsers
 module.exports.getUsers = (req, res, next) => {
   User.find()
-    .then((users) => res.status(200).send({ data: users }))
+    .then((users) => res.status(OK).send({ data: users }))
     .catch(next);
 };
 
@@ -37,52 +38,49 @@ module.exports.getUserById = (req, res, next) => {
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Некорректные данные'));
-      } else {
-        next(err);
+      if (err instanceof NotFoundError) {
+        return next(err);
       }
+      if (err instanceof mongoose.Error.CastError) {
+        return next(new BadRequestError('Переданы некорректные данные'));
+      }
+      return next(new InternalServerError('Произошла ошибка на сервере.'));
     });
 };
 
-// updateUser
-module.exports.updateUser = (req, res) => {
+// функция обновления информации о пользователе с общей логикой
+function updateInfo(res, next, id, props) {
+  User.findByIdAndUpdate(
+    id,
+    props,
+    { new: true, runValidators: true },
+  )
+    .then((user) => {
+      if (!user) {
+        throw next(new NotFoundError('Пользователь не найден'));
+      }
+      return res.status(OK).send({ data: user });
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        return next(new BadRequestError('Переданы некорректные данные'));
+      }
+      return next(new InternalServerError('Произошла ошибка на сервере.'));
+    });
+}
+
+// функция-контроллер вносит изменения в данные пользователя
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors)
-          .map((error) => error.message)
-          .join('; ');
-        res.status(400).send({ message });
-      } else {
-        res.status(500).send({ message: 'Что-то пошло не так' });
-      }
-    });
+  const userId = req.user._id;
+
+  return updateInfo(res, next, userId, { name, about });
 };
 
-// updateAvatar
-module.exports.updateAvatar = (req, res) => {
+// функция-контроллер меняет аватар
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors)
-          .map((error) => error.message)
-          .join('; ');
-        res.status(400).send({ message });
-      } else {
-        res.status(500).send({ message: 'Что-то пошло не так' });
-      }
-    });
+  const userId = req.user._id;
+
+  return updateInfo(res, next, userId, { avatar });
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { userRouter, cardRouter } = require('./routes');
+const { userRouter, cardRouter } = require('./routes/index');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Слушаем 3000 порт
@@ -8,6 +8,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(express.json());
+
 app.use((req, res, next) => {
   req.user = {
     _id: '644111c121971bd6bdec4dc1',
@@ -21,14 +22,13 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
-app.use(userRouter);
-app.use(cardRouter);
+app.use('/users', userRouter);
+app.use('/cards', cardRouter);
 app.use(errorHandler);
 
 // запрос к несуществующему роуту
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страница не найдена' });
-  throw new Error('Not found');
 });
 
 app.listen(PORT, () => {

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { urlRegex } = require('../utils/regex');
+const { REGEXP_URL } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator(v) {
-        return urlRegex.test(v);
+        return REGEXP_URL.test(v);
       },
       message: 'данные в поле аватар не являются ссылкой',
     },
