@@ -10,6 +10,14 @@
   
 Остальные директории вспомогательные, создаются при необходимости разработчиком
 
+## Стек технологий
+<li>Node.js</li>
+<li>Express.js</li>
+<li>MongoDB</li>
+<li>Mongoose</li>
+<li>Celebrate, Joi</li>
+<li>bcrypt</li>
+
 ## Запуск проекта
 
 `npm run start` — запускает сервер   
