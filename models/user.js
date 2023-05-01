@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
-const { REGEXP_URL } = require('../utils/constants');
+const { RegExp } = require('../utils/constants');
 const { UnauthorizedError } = require('../errors/UnauthorizedError');
 
 const userSchema = new mongoose.Schema({
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator(v) {
-        return REGEXP_URL.test(v);
+        return RegExp.test(v);
       },
       message: 'данные в поле аватар не являются ссылкой',
     },

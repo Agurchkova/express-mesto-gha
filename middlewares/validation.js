@@ -1,7 +1,7 @@
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
 const BadRequestError = require('../errors/BadRequestError');
-const REGEXP_URL = require('../utils/constants');
+const { RegExp } = require('../utils/constants');
 
 // signUp(регистрация)
 const signUp = celebrate({
@@ -10,7 +10,7 @@ const signUp = celebrate({
     about: Joi.string().min(2).max(30),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8).max(30),
-    avatar: Joi.string().pattern(REGEXP_URL),
+    avatar: Joi.string().pattern(RegExp),
   }),
 });
 
@@ -40,7 +40,7 @@ const updateUserValidation = celebrate({
 // updateAvatarValidation
 const updateAvatarValidation = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(REGEXP_URL),
+    avatar: Joi.string().pattern(RegExp),
   }),
 });
 
