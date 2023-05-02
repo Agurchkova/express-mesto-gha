@@ -29,15 +29,16 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 app.use(helmet());
 app.use(cookieParser());
 app.use(limiter);
-app.use(errorHandler);
 
 // роуты, не требующие авторизации (регистрация и логин)
 app.post('/signup', signUp, createUser);
 app.post('/signin', signIn, login);
 
+app.use(auth);
+
 // роуты, которым авторизация нужна
-app.use('/', auth, require('./routes/cards'));
-app.use('/', auth, require('./routes/users'));
+app.use('/', require('./routes/cards'));
+app.use('/', require('./routes/users'));
 
 // запрос к несуществующему роуту
 app.use('*', (req, res, next) => {
@@ -46,6 +47,7 @@ app.use('*', (req, res, next) => {
 
 // обработчики ошибок
 app.use(errors());
+app.use(errorHandler);
 
 // здесь обрабатываем все ошибки
 app.use((err, req, res) => {

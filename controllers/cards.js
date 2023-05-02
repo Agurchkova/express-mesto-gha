@@ -4,10 +4,11 @@ const {
   BadRequestError,
   NotFoundError,
   InternalServerError,
+  ForbiddenError,
 } = require('../errors/index');
 const { OK } = require('../utils/constants');
 
-// getCard
+// getCards
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(OK).send(cards))
@@ -31,10 +32,14 @@ module.exports.createCard = (req, res, next) => {
 // deleteCard
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
+  const { _id } = req.user;
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
         return next(new NotFoundError('Карточка не найдена'));
+      }
+      if (card.owner.valueOf() !== _id) {
+        return next(new ForbiddenError('Нет прав для удаления карточки'));
       }
       return card.remove()
         .then(() => res.send({ message: 'Карточка успешно удалена' }));
