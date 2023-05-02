@@ -34,11 +34,9 @@ app.use(limiter);
 app.post('/signup', signUp, createUser);
 app.post('/signin', signIn, login);
 
-app.use(auth);
-
 // роуты, которым авторизация нужна
-app.use('/', require('./routes/cards'));
-app.use('/', require('./routes/users'));
+app.use('/', auth, require('./routes/cards'));
+app.use('/', auth, require('./routes/users'));
 
 // запрос к несуществующему роуту
 app.use('*', (req, res, next) => {

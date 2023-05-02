@@ -22,7 +22,7 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   if (!email || !password) {
-    next(new BadRequestError('Переданы некорректные данные'));
+    next(new BadRequestError('Неверные логин или пароль'));
   }
   return User.findOne({ email }).then((user) => {
     if (user) {
