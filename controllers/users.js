@@ -48,7 +48,7 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
       return next(new InternalServerError('Произошла ошибка на сервере.'));
     });
