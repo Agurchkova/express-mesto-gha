@@ -1,6 +1,6 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
@@ -22,7 +22,17 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  bcrypt.hash(password, 10)
+  if (!email || !password) {
+    next(new BadRequestError('Неверные логин или пароль'));
+  }
+
+  return User.findOne({ email }).then((user) => {
+    if (user) {
+      next(new ConflictError(`Пользователь с ${email} уже существует`));
+    }
+
+    return bcrypt.hash(password, 10);
+  })
     .then((hash) => User.create({
       email,
       password: hash,
@@ -40,9 +50,6 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.code === 11000) {
-        return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-      }
       if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные'));
       }
@@ -50,6 +57,18 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
+// getCurrentUser
+module.exports.getCurrentUser = (req, res, next) => {
+  const { _id } = req.user;
+  User.findById(_id).then((user) => {
+    // проверка пользователя по id
+    if (!user) {
+      return next(new NotFoundError('Пользователь с таким id не найден'));
+    }
+    // возвращаем пользователя
+    return res.status(OK).send(user);
+  }).catch(next);
+};
 // getUsers
 module.exports.getUsers = (req, res, next) => {
   User.find()
@@ -126,6 +145,7 @@ module.exports.login = (req, res, next) => {
       // создание токена
       const token = jwt.sign(
         { _id: user._id },
+        'some-secret-key',
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         {
           expiresIn: '7d',
@@ -138,17 +158,4 @@ module.exports.login = (req, res, next) => {
       }).send({ token });
     })
     .catch(next);
-};
-
-// getCurrentUser
-module.exports.getCurrentUser = (req, res, next) => {
-  const { _id } = req.user;
-  User.findById(_id).then((user) => {
-    // проверка пользователя по id
-    if (!user) {
-      return next(new NotFoundError('Пользователь с таким id не найден'));
-    }
-    // возвращаем пользователя
-    return res.status(OK).send(user);
-  }).catch(next);
 };

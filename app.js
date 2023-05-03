@@ -1,15 +1,15 @@
 require('dotenv').config();
-const { errors } = require('celebrate');
 const express = require('express');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
-const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
 const errorHandler = require('./middlewares/errorHandler');
 const { signUp, signIn } = require('./middlewares/validation');
 const NotFoundError = require('./errors/index');
+const allRouters = require('./routes/index');
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -35,8 +35,7 @@ app.post('/signup', signUp, createUser);
 app.post('/signin', signIn, login);
 
 // роуты, которым авторизация нужна
-app.use('/', auth, require('./routes/cards'));
-app.use('/', auth, require('./routes/users'));
+app.use(allRouters);
 
 // запрос к несуществующему роуту
 app.use('*', (req, res, next) => {
@@ -46,11 +45,6 @@ app.use('*', (req, res, next) => {
 // обработчики ошибок
 app.use(errors());
 app.use(errorHandler);
-
-// здесь обрабатываем все ошибки
-app.use((err, req, res) => {
-  res.status(err.statusCode).send({ message: err.message });
-});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
