@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
-const validator = require('validator');
-const BadRequestError = require('../errors/BadRequestError');
+// const validator = require('validator');
+// const BadRequestError = require('../errors/BadRequestError');
 const { RegExp } = require('../utils/constants');
 
 // signUp(регистрация)
@@ -48,12 +48,7 @@ const updateAvatarValidation = celebrate({
 const createCardValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().custom((value) => {
-      if (!validator.isURL(value, { require_protocol: true })) {
-        throw new BadRequestError('Некорректный формат ссылки');
-      }
-      return value;
-    }),
+    link: Joi.string().required().pattern(RegExp),
   }),
 });
 
