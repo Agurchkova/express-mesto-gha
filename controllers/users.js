@@ -40,83 +40,26 @@ module.exports.login = (req, res, next) => {
 };
 
 // createUser
-// module.exports.createUser = (req, res, next) => {
-//   const {
-//     name, about, avatar, email, password,
-//   } = req.body;
-
-//   if (!email || !password) {
-//     next(new BadRequestError('Неверные логин или пароль'));
-//   }
-
-//   return User.findOne({ email }).then((user) => {
-//     if (user) {
-//       next(new ConflictError(`Пользователь с ${email} уже существует`));
-//     }
-
-//     return bcrypt.hash(password, 10);
-//   })
-// .then((hash) => User.create({
-//   email,
-//   password: hash,
-//   name,
-//   about,
-//   avatar,
-// }))
-// .then((user) => {
-//   res.status(OK).send({
-//     name: user.name,
-//     about: user.about,
-//     avatar: user.avatar,
-//     _id: user._id,
-//     email: user.email,
-//   });
-// })
-// .catch((err) => {
-//   if (err.name === 'ValidationError') {
-//     next(new BadRequestError('Неверные данные о пользователе или неверная ссылка на аватар.'));
-//   }
-//   return next(err);
-// });
-// .catch((err) => {
-//   if (err instanceof mongoose.Error.ValidationError) {
-//     next(new BadRequestError('Переданы некорректные данные'));
-//   }
-//   return next(new InternalServerError('Произошла ошибка на сервере.'));
-// });
-//     .catch((err) => {
-//       if (err.code === 11000) {
-//         return next(new ConflictError('Пользователь с указанным email уже зарегистрирован'));
-//       }
-//       if (err instanceof mongoose.Error.ValidationError) {
-//         return next(new BadRequestError('Переданы некорректные данные пользователя'));
-//       }
-//       return next(new InternalServerError('Произошла ошибка на сервере.'));
-//     });
-// };
-
 module.exports.createUser = (req, res, next) => {
-  // const {
-  //   email, password,
-  // } = req.body;
-  // User.findOne({ email }).then((user) => {
-  //   if (user) {
-  //     next(new ConflictError(`Пользователь с ${email} уже существует`));
-  //   }
-
-  //   return bcrypt.hash(password, 10);
-  // })
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
       ...req.body, password: hash,
     }))
     .then(({
-      name, about, avatar, email, _id, createdAt,
+      email,
+      name,
+      about,
+      avatar,
+      _id,
     }) => {
       res.status(OK).send(
         {
           data: {
-            name, about, avatar, email, _id, createdAt,
+            email,
+            name,
+            about,
+            avatar,
+            _id,
           },
         },
       );
