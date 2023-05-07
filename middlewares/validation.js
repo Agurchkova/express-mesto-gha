@@ -1,8 +1,8 @@
 const { celebrate, Joi } = require('celebrate');
 const { RegExp } = require('../utils/constants');
 
-// signUp(регистрация)
-const signUp = celebrate({
+// signUpValidation(регистрация)
+const signUpValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
@@ -12,8 +12,8 @@ const signUp = celebrate({
   }),
 });
 
-// signIn(логин)
-const signIn = celebrate({
+// signInValidation(логин)
+const signInValidation = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8).max(30),
@@ -58,8 +58,8 @@ const cardIdValidation = celebrate({
 });
 
 module.exports = {
-  signUp,
-  signIn,
+  signUpValidation,
+  signInValidation,
   userIdValidation,
   updateUserValidation,
   updateAvatarValidation,

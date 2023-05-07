@@ -8,7 +8,6 @@ const {
   BadRequestError,
   NotFoundError,
   InternalServerError,
-  ConflictError,
 } = require('../errors/index');
 const {
   OK,
@@ -55,23 +54,19 @@ module.exports.createUser = (req, res, next) => {
       res.status(OK).send(
         {
           data: {
-            email,
-            name,
-            about,
-            avatar,
-            _id,
+            email, name, about, avatar, _id,
           },
         },
       );
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return next(new ConflictError('Пользователь с указанным email уже зарегистрирован'));
+        return res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
       }
-      if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError('Переданы некорректные данные пользователя'));
+      if (err.name === 'ValidationError') {
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(err);
     });
 };
 
@@ -79,7 +74,6 @@ module.exports.createUser = (req, res, next) => {
 module.exports.getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id).then((user) => {
-    console.log(req.user._id);
     // проверка пользователя по id
     if (!user) {
       return next(new NotFoundError('Пользователь с таким id не найден'));
@@ -111,7 +105,7 @@ module.exports.getUserById = (req, res, next) => {
       if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(new InternalServerError('Ошибка на сервере'));
     });
 };
 
@@ -132,7 +126,7 @@ function updateInfo(res, next, id, props) {
       if (err instanceof mongoose.Error.ValidationError) {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(new InternalServerError('Ошибка на сервере'));
     });
 }
 

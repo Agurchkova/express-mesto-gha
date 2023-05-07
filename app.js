@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/errorHandler');
 const allRouters = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
-const { signUp, signIn } = require('./middlewares/validation');
+const { signUpValidation, signInValidation } = require('./middlewares/validation');
 const NotFoundError = require('./errors/NotFoundError');
 
 // Слушаем 3000 порт
@@ -23,6 +23,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 app.use(cookieParser());
 app.use(helmet());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // за 15 минут
@@ -34,16 +35,16 @@ app.use(limiter);
 app.use(allRouters);
 
 // роуты, не требующие авторизации (регистрация и логин)
-app.post('/signup', signUp, createUser);
-app.post('/signin', signIn, login);
+app.post('/signup', signUpValidation, createUser);
+app.post('/signin', signInValidation, login);
 
 // обработка ошибки неправильного пути
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не существует'));
 });
 
-app.use(errors());
 // обработчики ошибок
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {
