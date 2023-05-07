@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/errorHandler');
@@ -40,6 +41,8 @@ app.post('/signin', signIn, login);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не существует'));
 });
+
+app.use(errors());
 // обработчики ошибок
 app.use(errorHandler);
 
