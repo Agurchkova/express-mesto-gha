@@ -10,12 +10,11 @@ const allRouters = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
 const { signUpValidation, signInValidation } = require('./middlewares/validation');
 const NotFoundError = require('./errors/NotFoundError');
+const { PORT, DB_ADDRESS } = require('./config');
 
-// Слушаем 3000 порт
-const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
+mongoose.connect(DB_ADDRESS, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

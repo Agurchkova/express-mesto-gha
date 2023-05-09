@@ -3,7 +3,6 @@ const Card = require('../models/card');
 const {
   BadRequestError,
   NotFoundError,
-  InternalServerError,
   ForbiddenError,
 } = require('../errors/index');
 const { OK } = require('../utils/constants');
@@ -20,12 +19,12 @@ module.exports.createCard = (req, res, next) => {
   console.log(req.user._id); // _id станет доступен
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(OK).send({ data: card }))
+    .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(err);
     });
 };
 
@@ -51,7 +50,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(err);
     });
 };
 
@@ -73,7 +72,7 @@ function handleLikeCard(res, next, id, props) {
       if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      return next(new InternalServerError('Произошла ошибка на сервере.'));
+      return next(err);
     });
 }
 
