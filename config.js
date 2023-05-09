@@ -10,5 +10,3 @@ module.exports = {
   PORT,
   DB_ADDRESS,
 };
-
-module.exports = { jwtKey: 'some-secret-key' };
