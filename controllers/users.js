@@ -11,7 +11,9 @@ const {
 const {
   OK,
 } = require('../utils/constants');
-const { NODE_ENV, JWT_SECRET, jwtKey } = require('../config');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
+const { jwtKey } = require('../config');
 
 // User authentication
 module.exports.login = (req, res, next) => {
@@ -31,7 +33,7 @@ module.exports.login = (req, res, next) => {
         maxAge: 3600000,
         httpOnly: true,
         sameSite: true,
-      }).send({ token });
+      }).send({ _id: user._id });
     })
     .catch(next);
 };
