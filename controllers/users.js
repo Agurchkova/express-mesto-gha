@@ -12,8 +12,7 @@ const {
   OK,
 } = require('../utils/constants');
 
-const { NODE_ENV, JWT_SECRET } = process.env;
-const { jwtKey } = require('../config');
+const { NODE_ENV, JWT_SECRET } = require('../config');
 
 // User authentication
 module.exports.login = (req, res, next) => {
@@ -24,7 +23,7 @@ module.exports.login = (req, res, next) => {
       // создание токена
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : jwtKey,
+        NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
         {
           expiresIn: '7d',
         },
