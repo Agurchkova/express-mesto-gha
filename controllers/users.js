@@ -2,6 +2,7 @@ require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const { jwtKey } = require('../utils/jwtKey');
 const User = require('../models/user');
 const {
   BadRequestError,
@@ -23,7 +24,7 @@ module.exports.login = (req, res, next) => {
       // создание токена
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
+        NODE_ENV === 'production' ? JWT_SECRET : jwtKey,
         {
           expiresIn: '7d',
         },
