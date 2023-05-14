@@ -11,6 +11,7 @@ const { createUser, login } = require('./controllers/users');
 const { signUpValidation, signInValidation } = require('./middlewares/validation');
 const NotFoundError = require('./errors/NotFoundError');
 const { PORT, DB_ADDRESS } = require('./config');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // за 15 минут
@@ -41,6 +43,8 @@ app.post('/signin', signInValidation, login);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не существует'));
 });
+
+app.use(errorLogger);
 
 // обработчики ошибок
 app.use(errors());
